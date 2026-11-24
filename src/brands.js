@@ -9,6 +9,11 @@ const UNITED = {
   logo: UNITED_LOGO, width: 2998, height: 2706, bounds: [308, 160, 2425, 2424],
 };
 export const brandFor = type => type === 'united' ? UNITED : HUNDRA;
+export const reportTheme = type => type === 'united' ? {
+  bg:[3,10,23],card:[8,27,49],border:[47,82,122],accent:[244,99,111],secondary:[201,0,0],muted:[164,186,209],text:[239,246,255],
+} : {
+  bg:[2,8,14],card:[7,25,39],border:[45,107,132],accent:[105,209,242],secondary:[105,209,242],muted:[159,184,201],text:[241,248,253],
+};
 export function brandLogo(type) {
   const b = brandFor(type);
   // The viewBox removes only empty canvas margins. The original bitmap is intact.

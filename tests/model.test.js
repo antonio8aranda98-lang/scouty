@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fieldsFor, validate, notesToReport, hasNotes, validateAIReport, SECTIONS } from '../src/model.js';
+import { fieldsFor, validate, notesToReport, hasNotes, validateAIReport, combineNotes, SECTIONS } from '../src/model.js';
 import { buildPDF, filename } from '../src/pdf.js';
 const sample = type => Object.fromEntries(fieldsFor(type).map(f => [f.key, f.type === 'number' ? '0' : f.type === 'select' ? f.options[0] : 'Ejemplo de prueba']));
 test('Los tres tipos exigen sus campos específicos y aceptan un cero explícito', () => {
@@ -25,6 +25,11 @@ test('La respuesta de IA debe ser completa, textual y no vacía', () => {
   assert.throws(() => validateAIReport({general:'Texto'}));
   assert.throws(() => validateAIReport(notesToReport({})));
   const valid = notesToReport({general:'Informe observado.'}); assert.deepEqual(validateAIReport(valid), valid);
+});
+test('Las notas de borradores anteriores se reúnen sin perder contenido', () => {
+  assert.equal(combineNotes({general:'Notas mezcladas',tactics:'Apoyos interiores',improvements:'Mirar antes'}), 'Notas mezcladas\n\nTÁCTICA\nApoyos interiores\n\nASPECTOS DE MEJORA\nMirar antes');
+  assert.equal(combineNotes({general:'Todo junto'}),'Todo junto');
+  assert.equal(combineNotes({}),'');
 });
 test('PDF de cada modalidad y paginación con observaciones extensas', () => {
   for (const type of ['hundra','scouting','united']) {

@@ -27,7 +27,9 @@ test('Validación del servidor en las tres modalidades y rechazo de tipos manipu
   assert.throws(() => validatePayload({ ...data, data: { ...data.data, minutes: [] } }));
   assert.throws(() => validatePayload({ ...data, data: { ...data.data, rating: '11' } }));
   assert.throws(() => validatePayload({ ...data, notes: { general: 123 } }));
-  assert.throws(() => validatePayload({ ...data, notes: { general: 'x'.repeat(12001) } }));
+  assert.equal(validatePayload({ ...data, notes: { general: 'x'.repeat(40000) } }).notes.general.length, 40000);
+  assert.throws(() => validatePayload({ ...data, notes: { general: 'x'.repeat(40001) } }));
+  assert.throws(() => validatePayload({ ...data, notes: { tactics: 'x'.repeat(12001) } }));
   assert.throws(() => validatePayload({ ...data, notes: { general: ' ' } }));
   assert.throws(() => validatePayload({ ...data, notes: { general: 'x'.repeat(11000), tactics: 'x'.repeat(11000), technique: 'x'.repeat(11000), physical: 'x'.repeat(11000) } }));
 });

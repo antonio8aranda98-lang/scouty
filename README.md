@@ -6,11 +6,11 @@ Una aplicación en español para que los colaboradores de **HUNDRA** y **United 
 
 1. Elige seguimiento HUNDRA, captación HUNDRA o captación United.
 2. Completa los datos obligatorios. Las estadísticas admiten cero; la nota va de 0 a 10.
-3. Pega las notas del partido en Visión general o repártelas por táctica, técnica, físico, imagen y actitud, puntos fuertes y mejoras.
-4. Crea un borrador, edita el texto y confirma que lo has revisado.
+3. Pega todas las notas juntas en «Notas del partido». No hace falta ordenarlas ni clasificarlas.
+4. Pulsa «Crear informe con IA», revisa la redacción y confirma que la has revisado.
 5. Descarga el PDF para compartirlo por el canal autorizado.
 
-El botón «Crear borrador con mis notas» organiza el texto aportado sin IA. La aplicación también admite redacción con OpenAI a través del servidor protegido de Scouty, cuando se configuran sus secretos y la URL de conexión. El colaborador utiliza su código de acceso; nunca necesita una clave de OpenAI.
+OpenAI lee las notas en conjunto y las organiza en visión general, táctica, técnica, físico, actitud, puntos fuertes y mejoras. La redacción distingue lo observado de las valoraciones y conserva las incertidumbres; el colaborador debe revisarla. «Usar mis notas sin IA» crea un borrador literal sin atribuirle una redacción automática. El colaborador utiliza su código de acceso; nunca necesita una clave de OpenAI. Los borradores antiguos con notas por apartados se reúnen en una sola caja sin perder contenido.
 
 ## Tipos y campos obligatorios
 
@@ -37,9 +37,9 @@ npm run build
 npm run preview
 ```
 
-El PDF se genera en el dispositivo con jsPDF, sin subirlo a un servidor. Usa tipografía PDF estándar para español y texto occidental; normaliza la puntuación tipográfica y omite caracteres no compatibles, como emojis. No necesita ventana de impresión.
+El PDF se genera en el dispositivo con jsPDF, sin subirlo a un servidor. Usa Bebas Neue para los titulares y tipografía estándar para el cuerpo, con soporte de español y texto occidental; normaliza la puntuación tipográfica y omite caracteres no compatibles, como emojis. No necesita ventana de impresión. Bebas Neue se distribuye bajo SIL Open Font License 1.1, incluida en `public/fonts/OFL.txt`.
 
-Los informes y su vista previa utilizan los logos originales aportados por Antonio. Seguimiento y captación HUNDRA comparten diseño en negro y blanco; United emplea los colores del logo, azul `#002D62` y rojo `#C90000`. Las cabeceras con logo y los pies de página se repiten en documentos de varias páginas. `src/brand-assets.js` conserva los PNG originales codificados sin alterar sus píxeles; `src/brands.js` define las paletas y el encuadre sin márgenes transparentes.
+Los informes siguen la estética del CV aportado como referencia: fondo oscuro, nombre destacado con parte del texto delineada, datos en tarjetas y análisis en dos columnas, sin fotografía. HUNDRA utiliza acentos celestes; United combina fondo azul marino y acentos rojos. Los logos originales conservan sus colores y se presentan sobre una placa blanca. La plantilla no copia datos biográficos, contactos, trayectoria, temporadas ni imágenes del CV de referencia. Las cabeceras con logo y los pies se repiten en las páginas necesarias; no se recorta la redacción para forzar una sola página. `src/brand-assets.js` conserva los PNG originales y `src/brands.js` define las paletas.
 
 ## Datos y privacidad
 
@@ -61,6 +61,6 @@ La URL esperada para este repositorio es `https://antonio8aranda98-lang.github.i
 
 ## Alcance de esta primera versión
 
-Incluye formularios, validaciones, notas por apartados, revisión editable, borradores locales, PDF con varias páginas y un servidor de redacción con OpenAI. El servicio requiere configurar secretos antes de usarse. No se han añadido fichajes, pagos, promesas de becas ni decisiones automatizadas.
+Incluye formularios, validaciones, una única caja de notas, revisión editable por apartados, borradores locales, PDF con varias páginas y servidor de redacción con OpenAI. El servicio requiere configurar secretos antes de usarse. No se han añadido fichajes, pagos, promesas de becas ni decisiones automatizadas.
 
 Código © Antonio Aranda. No se concede una licencia de reutilización por el mero hecho de que el repositorio sea público. HUNDRA y United Sports Agency conservan sus marcas.

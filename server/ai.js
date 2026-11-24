@@ -35,7 +35,8 @@ export function validatePayload(input) {
   if (validate(input.type, data).length) throw new PublicError(400, 'Revisa los campos obligatorios y sus valores.');
   for (const s of SECTIONS) {
     const v = input.notes[s.key] ?? '';
-    if (typeof v !== 'string' || v.length > 12000) throw new PublicError(400, 'Cada apartado admite hasta 12.000 caracteres.');
+    const max = s.key === 'general' ? 40000 : 12000;
+    if (typeof v !== 'string' || v.length > max) throw new PublicError(400, `Las notas generales admiten 40.000 caracteres; los apartados anteriores, 12.000.`);
     notes[s.key] = v.trim();
   }
   if (!hasNotes(notes) || Object.values(notes).join('').length > 40000) throw new PublicError(400, 'Añade observaciones, con un máximo de 40.000 caracteres en total.');
@@ -47,7 +48,13 @@ export function providerPayload(payload, model) {
   const sportingData = Object.fromEntries(allowed.filter(k => Object.hasOwn(payload.data, k)).map(k => [k, payload.data[k]]));
   return {
     model, store: false, max_output_tokens: 3000, reasoning: { effort: 'none' },
-    instructions: `${AI_INSTRUCTIONS} Redacta párrafos completos y bien conectados, sin enumeraciones repetitivas. No repitas la ficha estadística en todos los apartados. Refierete a la persona como ${payload.type === 'united' ? 'la jugadora' : 'el jugador'}. Si las notas son escasas, el informe será breve. Una clasificación de nivel aportada por el colaborador es su valoración, no una decisión automatizada sobre becas o fichajes.`,
+    instructions: `${AI_INSTRUCTIONS}
+El colaborador pega todas sus notas mezcladas en un único campo: léelas en conjunto, identifica los hechos y organízalos tú en los siete apartados del esquema. No pidas que clasifique las notas.
+Escribe un informe de observación con una lectura coherente del partido, no una transcripción de apuntes ni una cronología de acciones sueltas. Usa un tono de analista deportivo profesional, natural, preciso y constructivo, apto para compartir con la familia. Conecta observaciones relacionadas sin inventar explicaciones ni vínculos causales. Conserva minutos de juego cuando aporten evidencia.
+Visión general debe sintetizar lo observado y sus matices en un párrafo fluido. No la conviertas en una lista de minutos, goles, asistencias, paradas y nota: esos datos ya aparecen en la ficha. No menciones paradas en la narrativa salvo que las notas describan acciones de portería.
+Táctica, técnica, físico y actitud desarrollan cada dimensión con sus evidencias. Puntos fuertes prioriza lo mejor documentado; mejoras formula qué trabajar a partir de las limitaciones realmente anotadas, sin inventar ejercicios, diagnósticos o promesas. Evita repetir la misma acción en todos los apartados. No añadas títulos ni Markdown dentro de los valores: la plantilla visual ya los presenta.
+Refiérete a la persona como ${payload.type === 'united' ? 'la jugadora' : 'el jugador'}. Ajusta la extensión a la evidencia: unas pocas notas producen un informe breve; notas ricas permiten mayor desarrollo. Nunca rellenes para ocupar espacio. Si no hay evidencia para una dimensión, déjala vacía. Conserva expresiones de duda y límites de la observación. No copies datos biográficos, posiciones, trayectorias, contactos ni temporadas de ejemplos visuales.
+Una clasificación de nivel aportada por el colaborador es su valoración, no una decisión automatizada sobre becas o fichajes.`,
     input: JSON.stringify({ reportType: TYPES[payload.type].label, data: sportingData, notes: payload.notes }),
     text: { format: { type: 'json_schema', name: 'scouty_report', strict: true, schema: {
       type: 'object', properties: { report: {

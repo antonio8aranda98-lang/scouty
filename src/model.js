@@ -34,6 +34,12 @@ export function validate(type, data) {
 export function notesToReport(notes) {
   return Object.fromEntries(SECTIONS.map(s => [s.key, (notes[s.key] || '').trim()]));
 }
+export function combineNotes(notes = {}) {
+  return SECTIONS.map(s => {
+    const value = typeof notes[s.key] === 'string' ? notes[s.key].trim() : '';
+    return value ? (s.key === 'general' ? value : `${s.label.toUpperCase()}\n${value}`) : '';
+  }).filter(Boolean).join('\n\n');
+}
 export function hasNotes(notes) { return SECTIONS.some(s => (notes[s.key] || '').trim()); }
 export function validateAIReport(report) {
   if (!report || typeof report !== 'object' || Array.isArray(report)) throw new Error('El servicio ha devuelto un informe con formato incorrecto.');

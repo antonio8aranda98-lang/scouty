@@ -33,10 +33,12 @@ Se usa Responses API con `store:false`, esquema JSON estricto y máximo 3.000 to
 
 El servidor no guarda informes ni registra notas, códigos, claves o respuestas. Los borradores y PDF permanecen en el dispositivo. Las instrucciones piden basarse en las observaciones; esto reduce las invenciones, pero el colaborador debe revisar siempre el resultado antes de descargarlo.
 
+La entrada principal es una única caja con todas las notas mezcladas. El servidor pide al modelo leerlas en conjunto, redactar una síntesis con sentido y distribuir el análisis en los siete apartados. La síntesis no debe repetir la ficha estadística y las secciones sin evidencia quedan vacías. El diseño visual se aplica con una plantilla común inspirada en el CV de referencia, sin fotos ni copia de sus datos personales. El modelo redacta el texto; no genera imágenes ni modifica el diseño del PDF.
+
 ## Cuotas y coste
 
 - Códigos individuales comparados por hash en tiempo constante; CORS limitado al origen configurado. Las llamadas directas sin Origin también necesitan código válido.
-- Hasta 12.000 caracteres por apartado, 40.000 en total y 200 KB por petición HTTP; validación de servidor para los tres formularios.
+- Hasta 40.000 caracteres en la caja única y 200 KB por petición HTTP; validación de servidor para los tres formularios. Por compatibilidad, los clientes antiguos pueden enviar apartados de hasta 12.000 caracteres con un total máximo de 40.000.
 - Hasta 10 intentos por hora y 30 al día por código, 100 al día para todo el servicio y 2 generaciones simultáneas. Los fallos del proveedor también consumen cuota.
 - **Los contadores están en memoria y se reinician al reiniciar o redesplegar el proceso. No son un tope mensual de gasto.** El día se calcula en UTC. Una cuota persistente requiere almacenamiento duradero.
 - No se implementan compras ni recargas. El propietario controla facturación, saldo y límites en OpenAI; debe comprobar qué límites detienen peticiones y cuáles solo generan alertas.
