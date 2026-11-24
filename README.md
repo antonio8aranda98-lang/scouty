@@ -10,7 +10,7 @@ Una aplicación en español para que los colaboradores de **HUNDRA** y **United 
 4. Crea un borrador, edita el texto y confirma que lo has revisado.
 5. Descarga el PDF para compartirlo por el canal autorizado.
 
-El botón «Crear borrador con mis notas» conserva y organiza el texto aportado. **No realiza redacción con IA.** La integración de IA queda preparada y desactivada hasta conectar un servicio protegido.
+El botón «Crear borrador con mis notas» organiza el texto aportado sin IA. La aplicación también admite redacción con OpenAI a través del servidor protegido de Scouty, cuando se configuran sus secretos y la URL de conexión. El colaborador utiliza su código de acceso; nunca necesita una clave de OpenAI.
 
 ## Tipos y campos obligatorios
 
@@ -44,12 +44,12 @@ El PDF se genera en el dispositivo con jsPDF, sin subirlo a un servidor. Usa tip
 - El repositorio contiene exclusivamente código y ejemplos ficticios de pruebas. No deben añadirse informes ni datos personales a Git.
 - Cada tipo tiene un borrador independiente en `localStorage`, en ese navegador y dispositivo. No hay cuenta, sincronización, base de datos ni copia de seguridad remota.
 - Los borradores locales no están cifrados. En dispositivos compartidos, usa «Borrar este borrador» al terminar. Si el almacenamiento no está disponible, la interfaz lo indica y el trabajo permanece solo en memoria mientras la página esté abierta.
-- Sin IA configurada, los datos de los informes no salen del navegador. La aplicación carga tipografías de Google Fonts, con alternativas del sistema.
+- Sin utilizar la IA, los datos de los informes no salen del navegador. Al generar con IA, la ficha y las notas pasan por el servidor de Scouty; este omite los identificadores de la ficha al llamar a OpenAI. Los datos personales escritos en las notas sí se envían. La aplicación carga tipografías de Google Fonts, con alternativas del sistema.
 - No hay analítica ni seguimiento. Descargar un PDF no lo envía automáticamente a nadie.
 
-## Conexión futura con IA
+## Conexión con IA
 
-Consulta [docs/IA.md](docs/IA.md). `.env.example` contiene únicamente la URL pública del servicio. Nunca incluyas claves de proveedor en variables `VITE_`, en el navegador o en el repositorio.
+Consulta [docs/IA.md](docs/IA.md) para configurar el servidor, los códigos por colaborador y la conexión de GitHub Pages. `.env.example` contiene únicamente la URL pública; `server/.env.example` documenta las variables del servidor. Nunca incluyas claves reales en variables `VITE_`, en el navegador o en el repositorio.
 
 ## Publicación
 
@@ -59,6 +59,6 @@ La URL esperada para este repositorio es `https://antonio8aranda98-lang.github.i
 
 ## Alcance de esta primera versión
 
-Incluye formularios, validaciones, notas por apartados, revisión editable, borradores locales y descarga PDF con varias páginas. Pendiente: elegir y conectar el proveedor de IA. No se han añadido fichajes, pagos, promesas de becas ni decisiones automatizadas.
+Incluye formularios, validaciones, notas por apartados, revisión editable, borradores locales, PDF con varias páginas y un servidor de redacción con OpenAI. El servicio requiere configurar secretos antes de usarse. No se han añadido fichajes, pagos, promesas de becas ni decisiones automatizadas.
 
 Código © Antonio Aranda. No se concede una licencia de reutilización por el mero hecho de que el repositorio sea público. HUNDRA y United Sports Agency conservan sus marcas.

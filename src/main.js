@@ -8,6 +8,7 @@ const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 const icon = name => `<i data-lucide="${name}" aria-hidden="true"></i>`;
 const KEY = 'scouty-drafts-v1';
 let drafts = {}, type = 'hundra', step = 0, errors = [], busy = false, saveTimer, storageFailed = false;
+let accessCode = '', aiPhase = 'Conectando…';
 try {
   const stored = JSON.parse(localStorage.getItem(KEY) || '{}');
   for (const t of Object.keys(TYPES)) {
@@ -43,7 +44,7 @@ function detailsStep() {
   return `<div class="section-heading"><span class="eyebrow">EL CONTEXTO IMPORTA</span><h2>Los datos del partido</h2><p>Una ficha clara es el comienzo de un buen informe.</p></div><div class="form-caption">${icon('clipboard-list')} Todos los campos son obligatorios. Usa 0 si no hubo acciones.</div><form id="data-form" novalidate class="field-grid">${fieldsFor(type).map(field).join('')}</form><div class="panel-actions"><span class="muted">La nota se valora de 0 a 10.</span><button class="primary" data-action="next">Continuar con las notas ${icon('notebook-pen')}</button></div>`;
 }
 function notesStep() {
-  return `<div class="section-heading"><span class="eyebrow">TU MIRADA, EN EL CAMPO</span><h2>Del partido al papel</h2><p>Escribe como te salga. Lo importante es lo que has observado.</p></div><div class="notes-tip">${icon('lightbulb')}<span>Incluye minutos y acciones concretas. Puedes pegar todas tus notas en <strong>Visión general</strong> o repartirlas por apartados.</span></div><div class="note-sections">${SECTIONS.map((s, i) => `<${i === 0 ? 'div' : 'details'} class="note-block" ${current().notes[s.key] && i ? 'open' : ''}>${i === 0 ? `<label class="note-title" for="notes-${s.key}">${icon(s.icon)} ${s.label}</label>` : `<summary>${icon(s.icon)} ${s.label}<span class="note-dot">${current().notes[s.key]?.trim() ? 'Con notas' : 'Opcional'}</span>${icon('chevron-down')}</summary>`}<div class="note-body"><label ${i === 0 ? 'class="sr-only"' : ''} for="notes-${s.key}">${s.hint}</label><textarea id="notes-${s.key}" data-note="${s.key}" rows="${i ? 4 : 7}" maxlength="12000" placeholder="${s.example || 'Anota lo que has visto…'}">${esc(current().notes[s.key])}</textarea></div></${i === 0 ? 'div' : 'details'}>`).join('')}</div><div class="ai-banner">${icon('sparkles')}<div><strong>${endpoint ? 'Redacción con IA disponible' : 'Redacción con IA · Próximamente'}</strong><p>${endpoint ? 'Solo se enviarán los datos y notas al pulsar Generar con IA. Revisa siempre el resultado.' : 'La conexión está preparada. Por ahora, creamos un borrador con tus notas para que puedas revisarlo y exportarlo.'}</p></div></div><div class="panel-actions"><button class="text-button" data-action="back">Volver a los datos</button><div class="action-group"><button class="${endpoint ? 'secondary' : 'primary'}" data-action="draft" ${busy ? 'disabled' : ''}>${icon('file-pen-line')} Crear borrador con mis notas</button>${endpoint ? `<button class="primary" data-action="ai" ${busy ? 'disabled' : ''}>${icon('sparkles')} ${busy ? 'Redactando…' : 'Generar con IA'}</button>` : ''}</div></div>`;
+  return `<div class="section-heading"><span class="eyebrow">TU MIRADA, EN EL CAMPO</span><h2>Del partido al papel</h2><p>Escribe como te salga. Lo importante es lo que has observado.</p></div><div class="notes-tip">${icon('lightbulb')}<span>Incluye minutos y acciones concretas. Puedes pegar todas tus notas en <strong>Visión general</strong> o repartirlas por apartados.</span></div><div class="note-sections">${SECTIONS.map((s, i) => `<${i === 0 ? 'div' : 'details'} class="note-block" ${current().notes[s.key] && i ? 'open' : ''}>${i === 0 ? `<label class="note-title" for="notes-${s.key}">${icon(s.icon)} ${s.label}</label>` : `<summary>${icon(s.icon)} ${s.label}<span class="note-dot">${current().notes[s.key]?.trim() ? 'Con notas' : 'Opcional'}</span>${icon('chevron-down')}</summary>`}<div class="note-body"><label ${i === 0 ? 'class="sr-only"' : ''} for="notes-${s.key}">${s.hint}</label><textarea id="notes-${s.key}" data-note="${s.key}" rows="${i ? 4 : 7}" maxlength="12000" placeholder="${s.example || 'Anota lo que has visto…'}">${esc(current().notes[s.key])}</textarea></div></${i === 0 ? 'div' : 'details'}>`).join('')}</div><div class="ai-banner">${icon('sparkles')}<div><strong>${endpoint ? 'Redacción con IA disponible' : 'Redacción con IA · Próximamente'}</strong><p>${endpoint ? 'OpenAI redactará el informe a partir de tus notas. Revisa siempre el resultado. La primera conexión puede tardar algo más.' : 'La conexión está preparada. Por ahora, creamos un borrador con tus notas para que puedas revisarlo y exportarlo.'}</p></div></div><div class="panel-actions"><button class="text-button" data-action="back">Volver a los datos</button><div class="action-group"><button class="${endpoint ? 'secondary' : 'primary'}" data-action="draft" ${busy ? 'disabled' : ''}>${icon('file-pen-line')} Crear borrador con mis notas</button>${endpoint ? `<button class="primary" data-action="ai" ${busy ? 'disabled' : ''}>${icon('sparkles')} ${busy ? aiPhase : 'Generar con IA'}</button>` : ''}</div></div>`;
 }
 function reviewStep() {
   return `<div class="section-heading"><span class="eyebrow">EL ÚLTIMO VISTAZO</span><h2>Un informe con tu criterio</h2><p>Revisa y ajusta el texto. Tú conoces lo que pasó en el campo.</p></div><div class="review-origin">${icon(current().source === 'ai' ? 'sparkles' : 'file-pen-line')} ${current().source === 'ai' ? 'Borrador redactado con IA. Contrasta cada afirmación con tus notas.' : 'Borrador con tus notas originales, sin redacción con IA.'}</div>${current().stale ? `<div class="warning">Has cambiado las notas. Vuelve al paso anterior y crea un nuevo borrador para incorporarlas.</div>` : ''}<div class="report-sheet"><div class="report-top"><strong>${TYPES[type].brand}</strong><span>INFORME DE OBSERVACIÓN</span></div><h3>${esc(current().data.name)}</h3><p class="match-line">${esc(current().data.match)}</p><div class="report-stats">${['minutes','goals','assists','saves','rating'].map(k => `<div><b>${esc(current().data[k])}${k === 'rating' ? '<small>/10</small>' : ''}</b><span>${{minutes:'Minutos',goals:'Goles',assists:'Asistencias',saves:'Paradas',rating:'Nota media'}[k]}</span></div>`).join('')}</div>${SECTIONS.map(s => `<div class="report-section"><label for="report-${s.key}">${s.label}</label><textarea id="report-${s.key}" data-report="${s.key}" maxlength="15000" rows="${Math.max(2, Math.min(8, Math.ceil((current().report[s.key] || '').length / 80)))}" placeholder="Sin observaciones. Este apartado no aparecerá en el PDF.">${esc(current().report[s.key])}</textarea></div>`).join('')}</div><label class="review-check"><input id="reviewed" type="checkbox" ${current().reviewed ? 'checked' : ''}><span>He revisado los datos y el texto. El informe refleja mis observaciones del partido.</span></label><div class="panel-actions"><button class="text-button" data-action="back">Volver a mis notas</button><button class="primary" data-action="pdf" ${!current().reviewed || current().stale || busy ? 'disabled' : ''}>${icon('download')} Descargar informe PDF</button></div>`;
@@ -104,15 +105,38 @@ async function makeReport(ai) {
       if (!endpoint) throw new Error('La conexión con IA todavía no está configurada.');
       const url = new URL(endpoint, location.href);
       if (url.protocol !== 'https:' && !['localhost', '127.0.0.1'].includes(url.hostname)) throw new Error('El servicio de IA debe usar HTTPS.');
-      const code = prompt('Código de acceso al servicio de IA (no se guardará en este navegador):');
+      const code = accessCode || await requestAccessCode();
       if (!code) return;
+      accessCode = code;
+      aiPhase = 'Conectando…'; render();
+      const healthUrl = new URL('/health', url);
+      const health = await fetch(healthUrl, { signal: AbortSignal.timeout(120000), credentials: 'omit', redirect: 'error' });
+      if (!health.ok || !(await health.json()).aiReady) throw new Error('El servicio de IA aún no está activado. Antonio debe completar la configuración.');
+      aiPhase = 'Redactando…'; render();
       const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${code}` }, body: JSON.stringify(payload), signal: AbortSignal.timeout(60000), credentials: 'omit', redirect: 'error' });
-      if (!response.ok) throw new Error(response.status === 401 || response.status === 403 ? 'El código de acceso no es válido.' : 'No se pudo generar el informe. Tus notas siguen guardadas.');
+      if (!response.ok) {
+        if (response.status === 401) accessCode = '';
+        const detail = await response.json().catch(() => ({}));
+        throw new Error(typeof detail.error === 'string' && detail.error.length < 300 ? detail.error : 'No se pudo generar el informe. Tus notas siguen guardadas.');
+      }
       report = validateAIReport((await response.json()).report);
     } else { report = notesToReport(draft.notes); }
     draft.report = report; draft.source = ai ? 'ai' : 'notes'; draft.stale = false; draft.reviewed = false; save(); step = 2;
   } catch (error) { toast(error.name === 'TimeoutError' ? 'El servicio ha tardado demasiado. Tus notas siguen guardadas.' : error.message); }
   finally { busy = false; const message = $('#toast')?.textContent; render(); if(message) toast(message); }
+}
+function requestAccessCode() {
+  return new Promise(resolve => {
+    const dialog = document.createElement('dialog');
+    dialog.className = 'ai-access-dialog';
+    dialog.innerHTML = '<form method="dialog"><h2>Acceso a la redacción con IA</h2><p>Introduce el código que te ha facilitado Antonio. Se conservará solo mientras esta página siga abierta.</p><label for="ai-access-code">Código de colaborador</label><input id="ai-access-code" type="password" autocomplete="off" required minlength="16" maxlength="200"><p>Al generar, se enviarán tus notas y datos deportivos a OpenAI mediante Scouty. Evita incluir información personal innecesaria en las notas.</p><div class="action-group"><button type="button" class="secondary" id="ai-access-cancel">Cancelar</button><button type="submit" class="primary">Generar informe</button></div></form>';
+    document.body.append(dialog);
+    dialog.querySelector('form').onsubmit = e => { e.preventDefault(); dialog.returnValue = dialog.querySelector('input').value; dialog.close(); };
+    dialog.querySelector('#ai-access-cancel').onclick = () => { dialog.returnValue = ''; dialog.close(); };
+    dialog.oncancel = () => { dialog.returnValue = ''; };
+    dialog.onclose = () => { const code = dialog.returnValue; dialog.remove(); resolve(code); };
+    dialog.showModal();
+  });
 }
 async function downloadPDF() {
   if (!validData() || !current().reviewed || current().stale || !hasNotes(current().report) || busy) return;
