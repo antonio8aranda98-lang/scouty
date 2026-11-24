@@ -60,7 +60,7 @@ export function createApp({ config = configFromEnv(), fetchImpl = fetch, limiter
       const input = validatePayload(await readBody(req));
       release = limiter.reserve(identity);
       timeout = setTimeout(() => controller.abort(new DOMException('Timeout', 'TimeoutError')), timeoutMs);
-      const report = await generateReport(input, { apiKey: config.apiKey, model: config.model, fetchImpl, signal: controller.signal });
+      const report = await generateReport(input, { apiKey: config.apiKey, model: config.model, fetchImpl, signal: controller.signal, onProviderError: details => console.error(JSON.stringify({event:'openai_error', ...details})) });
       if (!res.destroyed) send(res, 200, { report });
     } catch (error) {
       if (res.destroyed) return;

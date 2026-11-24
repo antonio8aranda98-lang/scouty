@@ -57,13 +57,19 @@ export function providerPayload(payload, model) {
     } } },
   };
 }
-export async function generateReport(payload, { apiKey, model, fetchImpl = fetch, signal }) {
+export async function generateReport(payload, { apiKey, model, fetchImpl = fetch, signal, onProviderError = () => {} }) {
   const response = await fetchImpl('https://api.openai.com/v1/responses', {
     method: 'POST', headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify(providerPayload(payload, model)), signal,
   });
   if (!response.ok) {
     // Never relay provider bodies: they can contain private data or configuration details.
+    const detail = await response.json().catch(() => ({}));
+    const code = typeof detail.error?.code === 'string' && /^[a-zA-Z0-9_-]{1,80}$/.test(detail.error.code) ? detail.error.code : 'unspecified';
+    const param = typeof detail.error?.param === 'string' && /^[a-zA-Z0-9_.\[\]-]{1,100}$/.test(detail.error.param) ? detail.error.param : null;
+    onProviderError({ status: response.status, code, param });
+    if (response.status === 401) throw new PublicError(503, 'OpenAI no acepta la clave configurada. Antonio debe revisar OPENAI_API_KEY en el servidor.');
+    if (response.status === 403 || response.status === 404) throw new PublicError(503, 'El proyecto de OpenAI no tiene acceso al modelo configurado. Antonio debe revisar los permisos y el modelo.');
     if (response.status === 429) throw new PublicError(503, 'OpenAI no puede atender la solicitud. Antonio debe revisar el saldo y los límites del servicio.');
     throw new PublicError(502, 'No se pudo redactar el informe con OpenAI. Tus notas se conservan.');
   }
