@@ -2,11 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { fieldsFor, validate, notesToReport, hasNotes, validateAIReport, combineNotes, SECTIONS } from '../src/model.js';
 import { buildPDF, filename } from '../src/pdf.js';
-const sample = type => Object.fromEntries(fieldsFor(type).map(f => [f.key, f.type === 'number' ? '0' : f.type === 'select' ? f.options[0] : 'Ejemplo de prueba']));
+const sample = type => Object.fromEntries(fieldsFor(type).map(f => [f.key, f.key === 'result' ? '2-1' : f.type === 'number' ? '0' : f.type === 'select' ? f.options[0] : 'Ejemplo de prueba']));
 test('Los tres tipos exigen sus campos específicos y aceptan un cero explícito', () => {
-  assert.equal(fieldsFor('hundra').length, 8);
-  assert.equal(fieldsFor('scouting').length, 12);
-  assert.equal(fieldsFor('united').length, 14);
+  assert.equal(fieldsFor('hundra').length, 9);
+  assert.equal(fieldsFor('scouting').length, 13);
+  assert.equal(fieldsFor('united').length, 15);
   for (const type of ['hundra','scouting','united']) {
     const data = sample(type); assert.deepEqual(validate(type, data), []);
     for (const f of fieldsFor(type)) assert.ok(validate(type, {...data, [f.key]: ''}).includes(f.key));

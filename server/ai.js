@@ -1,29 +1,9 @@
-import { createHash, timingSafeEqual } from 'node:crypto';
 import { AI_INSTRUCTIONS, TYPES, SECTIONS, fieldsFor, validate, hasNotes, validateAIReport } from '../src/model.js';
 
 export class PublicError extends Error {
   constructor(status, message) { super(message); this.status = status; }
 }
 const object = v => v !== null && typeof v === 'object' && !Array.isArray(v);
-const digest = value => createHash('sha256').update(value).digest();
-export function parseCodes(raw = '') {
-  if (!raw) return [];
-  let entries;
-  try { entries = JSON.parse(raw); } catch { throw new Error('ACCESS_CODES debe ser un objeto JSON válido.'); }
-  if (!object(entries) || !Object.keys(entries).length || Object.keys(entries).length > 100) throw new Error('ACCESS_CODES requiere de 1 a 100 accesos.');
-  const seen = new Set();
-  return Object.entries(entries).map(([id, code]) => {
-    if (!/^[a-zA-Z0-9_-]{1,60}$/.test(id) || typeof code !== 'string' || code.length < 16 || code.length > 200 || seen.has(code)) throw new Error('Cada código de acceso debe ser único y tener entre 16 y 200 caracteres.');
-    seen.add(code); return { id, hash: digest(code) };
-  });
-}
-export function authenticate(header, codes) {
-  if (typeof header !== 'string' || !header.startsWith('Bearer ') || header.length > 210) return null;
-  const supplied = digest(header.slice(7));
-  let identity = null;
-  for (const c of codes) if (timingSafeEqual(supplied, c.hash)) identity = c.id;
-  return identity;
-}
 export function validatePayload(input) {
   if (!object(input) || input.version !== 1 || !Object.hasOwn(TYPES, input.type) || !object(input.data) || !object(input.notes)) throw new PublicError(400, 'La solicitud de informe no es válida.');
   const data = {}, notes = {};
@@ -53,7 +33,8 @@ El colaborador pega todas sus notas mezcladas en un único campo: léelas en con
 Escribe un informe de observación con una lectura coherente del partido, no una transcripción de apuntes ni una cronología de acciones sueltas. Usa un tono de analista deportivo profesional, natural, preciso y constructivo, apto para compartir con la familia. Conecta observaciones relacionadas sin inventar explicaciones ni vínculos causales. Conserva minutos de juego cuando aporten evidencia.
 Visión general debe sintetizar lo observado y sus matices en un párrafo fluido. No la conviertas en una lista de minutos, goles, asistencias, paradas y nota: esos datos ya aparecen en la ficha. No menciones paradas en la narrativa salvo que las notas describan acciones de portería.
 Táctica, técnica, físico y actitud desarrollan cada dimensión con sus evidencias. Puntos fuertes prioriza lo mejor documentado; mejoras formula qué trabajar a partir de las limitaciones realmente anotadas, sin inventar ejercicios, diagnósticos o promesas. Evita repetir la misma acción en todos los apartados. No añadas títulos ni Markdown dentro de los valores: la plantilla visual ya los presenta.
-Refiérete a la persona como ${payload.type === 'united' ? 'la jugadora' : 'el jugador'}. Ajusta la extensión a la evidencia: unas pocas notas producen un informe breve; notas ricas permiten mayor desarrollo. Nunca rellenes para ocupar espacio. Si no hay evidencia para una dimensión, déjala vacía. Conserva expresiones de duda y límites de la observación. No copies datos biográficos, posiciones, trayectorias, contactos ni temporadas de ejemplos visuales.
+El autor es el colaborador y el destinatario es ${payload.type === 'united' ? 'la jugadora' : 'el jugador'}: habla siempre de tú al destinatario y usa primera persona del singular para observaciones y recomendaciones. Ejemplos de voz, solo si hay evidencia: «He observado que te ofreces entre líneas», «Destacaría tu control orientado», «Te recomiendo mirar antes de recibir». No hables del autor desde fuera: evita «el colaborador detalla», «según las notas», «el observador considera» o «se observa». Tampoco describas al destinatario como «el jugador» o «la jugadora». Las notas pueden estar escritas en tercera persona: transforma la voz manteniendo su significado, sin inventar conversaciones ni experiencias. No empieces cada frase con «yo» o «quiero detallar»; varía la redacción con naturalidad. Mantén los límites en primera persona, por ejemplo «No dispongo de suficientes observaciones para valorar tu resistencia». Ajusta el género al destinatario cuando sea necesario.
+Ajusta la extensión a la evidencia: unas pocas notas producen un informe breve; notas ricas permiten mayor desarrollo. Nunca rellenes para ocupar espacio. Si no hay evidencia para una dimensión, déjala vacía. Conserva expresiones de duda y límites de la observación. No copies datos biográficos, posiciones, trayectorias, contactos ni temporadas de ejemplos visuales.
 Una clasificación de nivel aportada por el colaborador es su valoración, no una decisión automatizada sobre becas o fichajes.`,
     input: JSON.stringify({ reportType: TYPES[payload.type].label, data: sportingData, notes: payload.notes }),
     text: { format: { type: 'json_schema', name: 'scouty_report', strict: true, schema: {
@@ -88,17 +69,16 @@ export async function generateReport(payload, { apiKey, model, fetchImpl = fetch
   try { return validateAIReport(JSON.parse(output).report); }
   catch { throw new PublicError(502, 'OpenAI ha devuelto un formato no válido. Tus notas se conservan.'); }
 }
-export function createLimiter({ perHour = 10, perDay = 30, totalPerDay = 100, clock = Date.now } = {}) {
-  const users = new Map(); let total = { day: '', count: 0 }, active = 0;
+export function createLimiter({ perHour = 10, perDay = 100, clock = Date.now } = {}) {
+  let total = { day: '', hour: -1, daily: 0, hourly: 0 }, active = 0;
   return {
-    reserve(id) {
+    reserve() {
       const now = clock(), day = new Date(now).toISOString().slice(0, 10), hour = Math.floor(now / 3600000);
-      if (total.day !== day) { total = { day, count: 0 }; users.clear(); }
-      const user = users.get(id) || { day, hour, daily: 0, hourly: 0 };
-      if (user.hour !== hour) { user.hour = hour; user.hourly = 0; }
-      if (user.daily >= perDay || user.hourly >= perHour || total.count >= totalPerDay) throw new PublicError(429, 'Se ha alcanzado el límite de generación. Conserva tus notas y vuelve a intentarlo más tarde.');
+      if (total.day !== day) total = { day, hour, daily: 0, hourly: 0 };
+      if (total.hour !== hour) { total.hour = hour; total.hourly = 0; }
+      if (total.daily >= perDay || total.hourly >= perHour) throw new PublicError(429, 'Se ha alcanzado el límite de generación. Conserva tus notas y vuelve a intentarlo más tarde.');
       if (active >= 2) throw new PublicError(429, 'Hay otros informes en proceso. Espera un momento y vuelve a intentarlo.');
-      user.daily++; user.hourly++; total.count++; active++; users.set(id, user);
+      total.daily++; total.hourly++; active++;
       let released = false;
       return () => { if (!released) { active--; released = true; } };
     },

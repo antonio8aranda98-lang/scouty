@@ -1,12 +1,12 @@
 import { createServer } from 'node:http';
 import { pathToFileURL } from 'node:url';
-import { authenticate, parseCodes, validatePayload, generateReport, createLimiter, PublicError } from './ai.js';
+import { validatePayload, generateReport, createLimiter, PublicError } from './ai.js';
 
 export function configFromEnv(env = process.env) {
   const origins = (env.ALLOWED_ORIGINS || 'https://antonio8aranda98-lang.github.io').split(',').map(x => x.trim());
   if (origins.some(o => { try { return new URL(o).origin !== o; } catch { return true; } })) throw new Error('ALLOWED_ORIGINS requiere orígenes completos sin ruta.');
-  const codes = parseCodes(env.ACCESS_CODES), apiKey = (env.OPENAI_API_KEY || '').trim();
-  return { origins, codes, apiKey, model: env.OPENAI_MODEL || 'gpt-6.1-terra' };
+  const apiKey = (env.OPENAI_API_KEY || '').trim();
+  return { origins, apiKey, model: env.OPENAI_MODEL || 'gpt-6.1-terra' };
 }
 function send(res, status, body) {
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' });
@@ -31,7 +31,7 @@ function readBody(req) {
   });
 }
 export function createApp({ config = configFromEnv(), fetchImpl = fetch, limiter = createLimiter(), timeoutMs = 50000 } = {}) {
-  const ready = Boolean(config.apiKey && config.codes.length);
+  const ready = Boolean(config.apiKey);
   const server = createServer(async (req, res) => {
     const path = req.url?.split('?')[0];
     if (path === '/health' && req.method === 'GET') {
@@ -44,12 +44,10 @@ export function createApp({ config = configFromEnv(), fetchImpl = fetch, limiter
     if (origin && !config.origins.includes(origin)) { send(res, 403, { error: 'Origen no permitido.' }); return; }
     if (origin) { res.setHeader('Access-Control-Allow-Origin', origin); res.setHeader('Vary', 'Origin'); }
     if (req.method === 'OPTIONS') {
-      res.writeHead(204, { 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Max-Age': '600', 'Cache-Control': 'no-store' }); res.end(); return;
+      res.writeHead(204, { 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Max-Age': '600', 'Cache-Control': 'no-store' }); res.end(); return;
     }
     if (req.method !== 'POST') { res.setHeader('Allow', 'POST, OPTIONS'); send(res, 405, { error: 'Método no permitido.' }); return; }
     if (!ready) { send(res, 503, { error: 'El servicio de IA aún no está activado. Antonio debe completar la configuración.' }); return; }
-    const identity = authenticate(req.headers.authorization, config.codes);
-    if (!identity) { send(res, 401, { error: 'El código de acceso no es válido.' }); return; }
     if (req.headers['content-type']?.split(';')[0].trim() !== 'application/json') { send(res, 415, { error: 'El contenido debe enviarse en formato JSON.' }); return; }
     let release;
     const controller = new AbortController();
@@ -58,7 +56,7 @@ export function createApp({ config = configFromEnv(), fetchImpl = fetch, limiter
     let timeout;
     try {
       const input = validatePayload(await readBody(req));
-      release = limiter.reserve(identity);
+      release = limiter.reserve();
       timeout = setTimeout(() => controller.abort(new DOMException('Timeout', 'TimeoutError')), timeoutMs);
       const report = await generateReport(input, { apiKey: config.apiKey, model: config.model, fetchImpl, signal: controller.signal, onProviderError: details => console.error(JSON.stringify({event:'openai_error', ...details})) });
       if (!res.destroyed) send(res, 200, { report });

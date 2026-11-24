@@ -10,17 +10,17 @@ Una aplicación en español para que los colaboradores de **HUNDRA** y **United 
 4. Pulsa «Crear informe con IA», revisa la redacción y confirma que la has revisado.
 5. Descarga el PDF para compartirlo por el canal autorizado.
 
-OpenAI lee las notas en conjunto y las organiza en visión general, táctica, técnica, físico, actitud, puntos fuertes y mejoras. La redacción distingue lo observado de las valoraciones y conserva las incertidumbres; el colaborador debe revisarla. «Usar mis notas sin IA» crea un borrador literal sin atribuirle una redacción automática. El colaborador utiliza su código de acceso; nunca necesita una clave de OpenAI. Los borradores antiguos con notas por apartados se reúnen en una sola caja sin perder contenido.
+OpenAI lee las notas en conjunto y las organiza en visión general, táctica, técnica, físico, actitud, puntos fuertes y mejoras. El colaborador habla en primera persona del singular y se dirige de tú al jugador o jugadora. La redacción distingue lo observado de las valoraciones y conserva las incertidumbres; el colaborador debe revisarla. «Usar mis notas sin IA» crea un borrador literal sin atribuirle una redacción automática. La generación es pública y no pide códigos de acceso; la clave de OpenAI permanece exclusivamente en el servidor. Los borradores antiguos con notas por apartados se reúnen en una sola caja sin perder contenido.
 
 ## Tipos y campos obligatorios
 
 | Tipo | Datos |
 | --- | --- |
-| Seguimiento HUNDRA | Nombre y apellidos, partido visto, titular/suplente, minutos disputados, goles, asistencias, paradas, nota media |
+| Seguimiento HUNDRA | Nombre y apellidos, partido visto, resultado del partido, titular/suplente, minutos disputados, goles, asistencias, paradas, nota media |
 | Captación HUNDRA | Los anteriores, más dorsal, equipo, liga y categoría |
 | Captación United | Los de captación HUNDRA, más estudios y nivel alto/medio/bajo |
 
-La interfaz recoge 8, 12 y 14 campos respectivamente. «Nombre y apellidos» ocupa un solo campo.
+La interfaz recoge 9, 13 y 15 campos respectivamente. «Nombre y apellidos» ocupa un solo campo.
 
 ## Desarrollo
 
@@ -51,7 +51,7 @@ Los informes siguen la estética del CV aportado como referencia: fondo oscuro, 
 
 ## Conexión con IA
 
-Consulta [docs/IA.md](docs/IA.md) para configurar el servidor, los códigos por colaborador y la conexión de GitHub Pages. `.env.example` contiene únicamente la URL pública; `server/.env.example` documenta las variables del servidor. Nunca incluyas claves reales en variables `VITE_`, en el navegador o en el repositorio.
+Consulta [docs/IA.md](docs/IA.md) para configurar el servidor y la conexión de GitHub Pages. `.env.example` contiene únicamente la URL pública; `server/.env.example` documenta las variables del servidor. Nunca incluyas claves reales en variables `VITE_`, en el navegador o en el repositorio.
 
 ## Publicación
 

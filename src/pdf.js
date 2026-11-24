@@ -90,10 +90,12 @@ export function buildPDF(type, draft) {
   }
   cursor.y+=4;
   const matchLines=lines(draft.data.match,heroWidth-8,9.5,'helvetica','bold');
-  const matchH=12+matchLines.length*4.7;
+  const resultLines=lines(`RESULTADO: ${draft.data.result}`,heroWidth-8,9,'helvetica','bold');
+  const matchH=14+matchLines.length*4.7+resultLines.length*4.5;
   ensure(cursor,matchH+3);box(left,cursor.y,heroWidth,matchH);
   text('PARTIDO OBSERVADO',left+4,cursor.y+5,6.8,t.accent,'helvetica','normal',{charSpace:.7});
   matchLines.forEach((line,i)=>text(line,left+4,cursor.y+11+i*4.7,9.5,t.text,'helvetica','bold'));
+  resultLines.forEach((line,i)=>text(line,left+4,cursor.y+12+matchLines.length*4.7+i*4.5,9,t.accent,'helvetica','bold'));
   cursor.y+=matchH+5;
   const stats=[['minutes','MINUTOS'],['rating','NOTA MEDIA'],['goals','GOLES'],['assists','ASISTENCIAS'],['saves','PARADAS'],['starter','PARTICIPACION']];
   const sw=(statsWidth-3)/2;
@@ -104,7 +106,7 @@ export function buildPDF(type, draft) {
     text(label,x+sw/2,y+12,5.8,score?t.bg:t.accent,'helvetica','normal',{align:'center',charSpace:.1});
   });
   cursor.y=Math.max(cursor.y,heroTop+55)+2;
-  const context=fieldsFor(type).filter(f=>!['name','match','starter',...stats.map(s=>s[0])].includes(f.key));
+  const context=fieldsFor(type).filter(f=>!['name','match','result','starter',...stats.map(s=>s[0])].includes(f.key));
   const cw=(width-gap)/2, contextCols=3, contextW=(width-2*3)/3;
   for(let i=0;i<context.length;i+=contextCols) {
     const pair=context.slice(i,i+contextCols);
