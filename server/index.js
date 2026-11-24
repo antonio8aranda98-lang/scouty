@@ -12,15 +12,23 @@ function send(res, status, body) {
   res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' });
   res.end(JSON.stringify(body));
 }
-async function readBody(req) {
-  let length = 0; const chunks = [];
-  for await (const chunk of req) {
-    length += chunk.length;
-    if (length > 200000) throw new PublicError(413, 'Las notas son demasiado largas.');
-    chunks.push(chunk);
-  }
-  try { return JSON.parse(Buffer.concat(chunks).toString('utf8')); }
-  catch { throw new PublicError(400, 'La solicitud no contiene JSON válido.'); }
+function readBody(req) {
+  return new Promise((resolve, reject) => {
+    let length = 0, exceeded = false; const chunks = [];
+    req.on('data', chunk => {
+      length += chunk.length;
+      if (length > 200000) {
+        if (!exceeded) { exceeded = true; chunks.length = 0; reject(new PublicError(413, 'Las notas son demasiado largas.')); }
+      } else if (!exceeded) chunks.push(chunk);
+    });
+    req.on('end', () => {
+      if (exceeded) return;
+      try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8'))); }
+      catch { reject(new PublicError(400, 'La solicitud no contiene JSON válido.')); }
+    });
+    req.on('error', reject);
+    req.on('aborted', () => reject(new PublicError(400, 'La solicitud se ha interrumpido.')));
+  });
 }
 export function createApp({ config = configFromEnv(), fetchImpl = fetch, limiter = createLimiter(), timeoutMs = 50000 } = {}) {
   const ready = Boolean(config.apiKey && config.codes.length);

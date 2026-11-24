@@ -70,6 +70,7 @@ test('HTTP: autenticación, CORS, datos inválidos, errores, timeout y éxito re
   response = await fetch(url + '/reports', {method:'POST', headers: {'Content-Type':'application/json'}, body:JSON.stringify(fixture('hundra'))}); assert.equal(response.status,401);
   response = await fetch(url + '/reports', {method:'POST', headers:{...headers,Origin:'https://untrusted.example'}, body:JSON.stringify(fixture('hundra'))}); assert.equal(response.status,403);
   response = await fetch(url + '/reports', {method:'POST', headers, body:'{broken'}); assert.equal(response.status,400);
+  response = await fetch(url + '/reports', {method:'POST', headers, body:JSON.stringify({notes:'x'.repeat(200000)})}); assert.equal(response.status,413);
   response = await fetch(url + '/reports', {method:'POST', headers, body:JSON.stringify({...fixture('hundra'),data:{}})}); assert.equal(response.status,400);
   assert.equal(calls,0);
   response = await fetch(url + '/reports', {method:'POST', headers, body:JSON.stringify(fixture('hundra'))}); assert.equal(response.status,200); assert.deepEqual(await response.json(),{report}); assert.equal(calls,1);

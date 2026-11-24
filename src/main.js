@@ -95,6 +95,7 @@ async function makeReport(ai) {
   if (!hasNotes(current().notes)) { toast('Añade al menos una observación del partido.'); $('#notes-general')?.focus(); return; }
   if (Object.values(current().notes).join('').length > 40000) { toast('Reduce las notas a un máximo de 40.000 caracteres en total.'); return; }
   if (hasNotes(current().report) && !confirm('Se sustituirá el texto del informe actual, incluidas tus ediciones. ¿Crear un nuevo borrador?')) return;
+  if (ai) aiPhase = 'Conectando…';
   busy = true;
   const draft = current();
   const payload = { version: 1, type, data: { ...draft.data }, notes: { ...draft.notes } };
