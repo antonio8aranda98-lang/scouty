@@ -39,6 +39,8 @@ npm run preview
 
 El PDF se genera en el dispositivo con jsPDF, sin subirlo a un servidor. Usa tipografía PDF estándar para español y texto occidental; normaliza la puntuación tipográfica y omite caracteres no compatibles, como emojis. No necesita ventana de impresión.
 
+Los informes y su vista previa utilizan los logos originales aportados por Antonio. Seguimiento y captación HUNDRA comparten diseño en negro y blanco; United emplea los colores del logo, azul `#002D62` y rojo `#C90000`. Las cabeceras con logo y los pies de página se repiten en documentos de varias páginas. `src/brand-assets.js` conserva los PNG originales codificados sin alterar sus píxeles; `src/brands.js` define las paletas y el encuadre sin márgenes transparentes.
+
 ## Datos y privacidad
 
 - El repositorio contiene exclusivamente código y ejemplos ficticios de pruebas. No deben añadirse informes ni datos personales a Git.
