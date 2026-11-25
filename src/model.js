@@ -1,3 +1,5 @@
+import { emptyHeatmap } from './heatmap-model.js';
+
 export const TYPES = {
   hundra: { brand: 'HUNDRA', title: 'Nuestros jugadores', subtitle: 'Seguimiento y evolución', label: 'Seguimiento de jugador HUNDRA', icon: 'shield-check' },
   scouting: { brand: 'HUNDRA', title: 'Jugadores en captación', subtitle: 'Observación de nuevo talento', label: 'Captación de jugador HUNDRA', icon: 'scan-search' },
@@ -22,7 +24,7 @@ export function fieldsFor(type) {
   if (type === 'united') fields.push({ key: 'level', label: 'Nivel', type: 'select', options: ['Alto', 'Medio', 'Bajo'] });
   return fields;
 }
-export const emptyDraft = () => ({ data: {}, notes: {}, report: {}, reviewed: false, stale: true, source: 'notes', date: new Date().toISOString() });
+export const emptyDraft = () => ({ data: {}, notes: {}, report: {}, heatmap: emptyHeatmap(), reviewed: false, stale: true, source: 'notes', date: new Date().toISOString() });
 export function validate(type, data) {
   return fieldsFor(type).filter(f => {
     const v = data[f.key];

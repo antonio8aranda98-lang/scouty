@@ -7,8 +7,9 @@ Una aplicación en español para que los colaboradores de **HUNDRA** y **United 
 1. Elige seguimiento HUNDRA, captación HUNDRA o captación United.
 2. Completa los datos obligatorios. Las estadísticas admiten cero; la nota va de 0 a 10.
 3. Pega todas las notas juntas en «Notas del partido». No hace falta ordenarlas ni clasificarlas.
-4. Pulsa «Crear informe con IA», revisa la redacción y confirma que la has revisado.
-5. Descarga el PDF para compartirlo por el canal autorizado.
+4. Si quieres añadir un mapa, abre «Mapa de presencia» y toca las zonas observadas. Cada toque pasa por baja, media, alta y sin marcar. La portería rival está siempre a la derecha.
+5. Pulsa «Crear informe con IA», revisa la redacción y confirma que la has revisado.
+6. Descarga el PDF para compartirlo por el canal autorizado.
 
 OpenAI lee las notas en conjunto y las organiza en visión general, táctica, técnica, físico, actitud, puntos fuertes y mejoras. El colaborador habla en primera persona del singular y se dirige de tú al jugador o jugadora. La redacción distingue lo observado de las valoraciones y conserva las incertidumbres; el colaborador debe revisarla. «Usar mis notas sin IA» crea un borrador literal sin atribuirle una redacción automática. La generación es pública y no pide códigos de acceso; la clave de OpenAI permanece exclusivamente en el servidor. Los borradores antiguos con notas por apartados se reúnen en una sola caja sin perder contenido.
 
@@ -21,6 +22,8 @@ OpenAI lee las notas en conjunto y las organiza en visión general, táctica, t�
 | Captación United | Los de captación HUNDRA, más estudios y nivel alto/medio/bajo |
 
 La interfaz recoge 9, 13 y 15 campos respectivamente. «Nombre y apellidos» ocupa un solo campo.
+
+El mapa de presencia es opcional y manual, con 12 zonas y tres niveles de intensidad. Se guarda por separado en cada borrador y solo aparece en la revisión y el PDF cuando hay alguna zona marcada. «Limpiar mapa» conserva el texto y los datos del informe. No representa posiciones GPS, distancias, porcentajes ni tiempo medido; una zona sin marcar no implica ausencia. El mapa no se envía al servidor ni a OpenAI y no modifica la redacción. Cambiarlo requiere volver a revisar el PDF, pero no volver a generar con IA.
 
 ## Desarrollo
 
